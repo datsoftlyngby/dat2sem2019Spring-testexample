@@ -12,7 +12,6 @@ import org.mockito.MockitoAnnotations;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.*;
 
-import org.mockito.stubbing.Answer;
 
 public class PriceCommandTest {
   @Mock
@@ -28,8 +27,8 @@ public class PriceCommandTest {
   
   @Test
   public void testPriceCommand() {
-    when(request.getParameter("code")).thenReturn("XYZ11");
-    //doNothing().when(request).setAttribute(any(String.class), any(Double.class));
+    // Set up
+    doReturn("XYZ11").when(request).getParameter("code");
     doAnswer( 
       invocation -> {
           String key = invocation.getArgument(0);
@@ -37,11 +36,17 @@ public class PriceCommandTest {
           assertThat(price, is(47.11));
           return null;
           }
-      ).when(request).setAttribute(any(String.class), any(Double.class));
-    when(logic.getPrice("XYZ11")).thenReturn(47.11);
+      ).when(request).setAttribute(any(String.class), anyDouble());
+    when(logic.getPrice("XYZ11")).thenReturn(47.11); // Alternative syntax
+    
+    // Execute
     Command command = new PriceCommand();
     String target = command.execute(request, logic);
+    
+    // Analyse
     assertThat(target, is("pricepage.jsp"));
+    verify(logic, atLeastOnce()).getPrice(anyString());
+
     }
   
   }
